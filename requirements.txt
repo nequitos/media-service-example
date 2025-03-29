@@ -1,0 +1,10 @@
+# ASGI
+fastapi==0.115.12
+pydantic==2.11.1
+
+# Database
+sqlalchemy==2.0.40
+asyncpg==0.30.0
+
+# Other
+environs==14.1.1

@@ -1,5 +1,6 @@
 from .base import (
     UoW,
-    User
+    User,
+    Base
 )
 from .user import UserRepository

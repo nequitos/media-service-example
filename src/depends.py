@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy import URL
 
 from src.repositories import *
-from config import *
+from .config import *
 
 
 # --- Database initialize --- #
@@ -17,6 +17,7 @@ postgres_url = URL.create(
 )
 engine = create_async_engine(url=postgres_url)
 uow = UoW(engine=engine)
+
 
 # --- Repositories initialize --- #
 uow[User] = UserRepository

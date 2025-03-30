@@ -1,4 +1,6 @@
 
+from uuid import UUID
+
 from sqlalchemy import (
     insert,
     update,
@@ -6,7 +8,6 @@ from sqlalchemy import (
     select
 )
 from .base import Repository, User
-
 from src.schemes.user import *
 
 
@@ -16,6 +17,7 @@ class UserRepository(Repository):
 
     async def create(self, scheme: UserCreateScheme) -> UserCreateScheme:
         stmt = insert(User).values(
+            uuid=scheme.uuid,
             is_admin=scheme.is_admin,
             yandex_id=scheme.yandex_id,
             login=scheme.login,
@@ -40,12 +42,12 @@ class UserRepository(Repository):
     async def read(
         self,
         _id: int | None = None,
-        username: str | None = None
+        uuid: UUID | None = None
     ) -> UserScheme | None:
         if _id is not None:
             stmt = select(User).filter_by(id=_id)
-        elif username is not None:
-            stmt = select(User).filter_by(first_name=username)
+        elif uuid is not None:
+            stmt = select(User).filter_by(uuid=uuid)
         else:
             stmt = None
 
@@ -57,6 +59,7 @@ class UserRepository(Repository):
         if user.is_admin and user is not None:
             return UserScheme(
                 id=user.id,
+                uuid=user.uuid,
                 yandex_id=user.yandex_id,
                 is_admin=user.is_admin,
                 login=user.login,
@@ -73,7 +76,7 @@ class UserRepository(Repository):
             )
 
     async def delete(self, _id) -> bool:
-        user_scheme = await self.get(_id=_id)
+        user_scheme = await self.read(_id=_id)
         stmt = delete(User).filter_by(_id=_id)
 
         if user_scheme.is_admin:
@@ -86,7 +89,7 @@ class UserRepository(Repository):
             return False
 
     async def update(self, scheme: UserChangeIsAdmin) -> bool:
-        user_scheme = await self.get(_id=scheme.id)
+        user_scheme = await self.read(_id=scheme.id)
         stmt = update(User).filter_by(_id=scheme.id).values(
             is_admin=scheme.is_admin
         )

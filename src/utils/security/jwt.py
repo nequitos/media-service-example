@@ -1,5 +1,6 @@
 
 from typing import Annotated
+from uuid import UUID
 
 import jwt
 from jwt.exceptions import InvalidTokenError
@@ -8,7 +9,8 @@ from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException, status
 from fastapi.security import (
     OAuth2PasswordRequestForm,
-    OAuth2AuthorizationCodeBearer
+    OAuth2AuthorizationCodeBearer,
+    OAuth2PasswordBearer
 )
 
 from src.config import (
@@ -31,8 +33,7 @@ __all__ = [
 
 
 
-oauth2_scheme = OAuth2AuthorizationCodeBearer(
-    authorizationUrl="/docs",
+oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="bearer"
 )
 
@@ -58,15 +59,15 @@ def validate_access_token(
     token: Annotated[str, Depends(oauth2_scheme)]
 ) -> TokenDataScheme | None:
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    username = payload.get("sub")
+    uuid = payload.get("sub")
 
-    if username:
-        return TokenDataScheme(username=username)
+    if uuid:
+        return TokenDataScheme(uuid=uuid)
 
 
 async def get_current_user(
     token: Annotated[str, oauth2_scheme],
-    repository: UserRepository
+    repository: UserRepository = Depends(get_user_repository)
 ) -> UserScheme:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -82,7 +83,7 @@ async def get_current_user(
         raise credentials_exception
 
     user_scheme = await repository.read(
-        username=token_data_scheme.username
+        uuid=UUID(token_data_scheme.uuid)
     )
 
     if user_scheme is None:

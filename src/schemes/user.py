@@ -1,8 +1,17 @@
 
 from .base import Validator
+from uuid import UUID
+
+
+__all__ = [
+    "UserCreateScheme",
+    "UserScheme",
+    "UserChangeIsAdmin"
+]
 
 
 class UserCreateScheme(Validator):
+    uuid: UUID | None
     yandex_id: str
     is_admin: bool
     login: str

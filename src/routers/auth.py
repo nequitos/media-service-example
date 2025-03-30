@@ -1,12 +1,14 @@
 
 from httpx import AsyncClient
 from datetime import timedelta
+from uuid import uuid4
 
 from fastapi import (
     APIRouter,
     Depends,
     HTTPException
 )
+from fastapi.responses import RedirectResponse
 
 from src.depends import get_user_repository
 from src.utils.security.jwt import create_access_token
@@ -66,7 +68,9 @@ async def callback(
         user_info = user_response.json()
 
     is_admin = True if CLIENT_ID == user_info["client_id"] else False
+    uuid = uuid4()
     user_create_scheme = UserCreateScheme(
+        uuid=uuid,
         yandex_id=user_info["id"],
         is_admin=is_admin,
         login=user_info["login"],
@@ -86,7 +90,7 @@ async def callback(
     if endpoint_scheme is not None:
         access_token_expire = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
-            data={"sub": user_info["first_name"]},
+            data={"sub": uuid.hex},
             expire_delta=access_token_expire
         )
 

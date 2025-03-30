@@ -12,13 +12,10 @@ from fastapi import (
     Depends,
     Form
 )
-from fastapi.responses import RedirectResponse
 
-from src.utils.security.jwt import oauth2_scheme, get_current_user
-from src.schemes.file import FilesUploadScheme
-from src.schemes.token import TokenScheme
-from src.repositories.user import UserRepository
-from src.depends import get_user_repository
+from src.utils.security.jwt import get_current_user, oauth2_scheme, validate_access_token
+from src.schemes.user import UserScheme
+
 
 
 audio_formats = [
@@ -31,20 +28,16 @@ router = APIRouter(prefix="/media")
     "/upload"
 )
 async def upload(
-    access_token: Annotated[str, Depends(oauth2_scheme)],
     file: UploadFile,
-    title: Annotated[str, None, Form()] = None,
-    repository: UserRepository = Depends(get_user_repository),
-
-):
-    print(access_token)
+    title: Annotated[str, None, Form()],
+    user_scheme: Annotated[UserScheme, Depends(get_current_user)],
+) -> Response:
     file_format = "".join(file.filename.split(".")[-1])
     if title is not None:
         filename = f"{title}.{file_format}"
     else:
         filename = file.filename
 
-    user_scheme = await get_current_user(access_token, repository)
 
     file_location = f"resources/media/{user_scheme.id}/{filename}"
     user_dir_path = f"resources/media/{user_scheme.id}/"
@@ -55,4 +48,8 @@ async def upload(
     if file_format in audio_formats:
         with open(file_location, "wb+") as fl:
             fl.write(await file.read())
+
+    return Response(
+        content="Successful"
+    )
 

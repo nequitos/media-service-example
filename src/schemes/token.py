@@ -8,7 +8,7 @@ class TokenScheme(Validator):
 
 
 class TokenDataScheme(Validator):
-    username: str | None = None
+    uuid: str | None = None
 
 
 class TokenAuthorizeScheme(Validator):

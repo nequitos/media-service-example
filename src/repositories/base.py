@@ -2,6 +2,7 @@
 from abc import abstractmethod, ABC
 from typing import Generic, TypeVar, Any, Annotated
 from pydantic._internal._model_construction import ModelMetaclass
+from uuid import uuid4
 
 from sqlalchemy.ext.asyncio import (
     AsyncAttrs,
@@ -19,9 +20,16 @@ from sqlalchemy import (
     String,
     BigInteger,
     ARRAY,
-    Boolean
+    Boolean,
+    UUID
 )
 
+__all__ = [
+    "Base",
+    "User",
+    "Repository",
+    "UoW"
+]
 
 T = TypeVar("T", bound=Any)
 
@@ -34,6 +42,7 @@ class User(Base):
     __tablename__ = "user"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    uuid: Mapped[uuid4] = mapped_column(UUID(as_uuid=True), default=uuid4, unique=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
 
     yandex_id: Mapped[str] = mapped_column(String, nullable=False)

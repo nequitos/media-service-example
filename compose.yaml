@@ -11,12 +11,9 @@ services:
       - "8000:8000"
     depends_on:
       - db
-    dns:
-      - 77.88.8.8
-      - 77.88.8.1
     network_mode: host
-#    command: ["fastapi", "run", "src/app.py", "--proxy-headers", "--host", "localhost", "--port", "80"]
-    command: ["uvicorn", "src.app:app"]
+#    command: ["fastapi", "run", "app.py", "--proxy-headers", "--host", "localhost", "--port", "80"]
+    command: ["python", "init_db.py", "&&", "uvicorn", "src.app:app"]
 
   db:
     image: postgres:16.8-bullseye

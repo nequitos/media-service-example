@@ -76,33 +76,24 @@ class UserRepository(Repository):
             )
 
     async def delete(self, _id) -> bool:
-        user_scheme = await self.read(_id=_id)
         stmt = delete(User).filter_by(_id=_id)
 
-        if user_scheme.is_admin:
-            async with self._session() as session:
-                await session.execute(stmt)
-                await session.commit()
+        async with self._session() as session:
+            await session.execute(stmt)
+            await session.commit()
 
-            return True
-        else:
-            return False
+        return True
 
-    async def update(self, scheme: UserChangeIsAdmin) -> bool:
-        user_scheme = await self.read(_id=scheme.id)
-        stmt = update(User).filter_by(_id=scheme.id).values(
+    async def update(self, scheme: UserChangeIsAdmin) -> UserScheme:
+        stmt = update(User).where(User.id == scheme.id).values(
             is_admin=scheme.is_admin
         )
 
-        if user_scheme.is_admin:
-            async with self._session() as session:
-                await session.merge(stmt)
-                await session.commit()
+        async with self._session() as session:
+            await session.execute(stmt)
+            await session.commit()
 
-            return True
-        else:
-            return False
-
+        return await self.read(_id=scheme.id)
 
 
 

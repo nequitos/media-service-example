@@ -6,7 +6,8 @@ from uuid import UUID
 __all__ = [
     "UserCreateScheme",
     "UserScheme",
-    "UserChangeIsAdmin"
+    "UserChangeIsAdmin",
+    "UserDeleteScheme"
 ]
 
 
@@ -34,3 +35,7 @@ class UserScheme(UserCreateScheme):
 class UserChangeIsAdmin(Validator):
     id: int
     is_admin: bool
+
+
+class UserDeleteScheme(Validator):
+    id: int

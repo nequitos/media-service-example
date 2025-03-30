@@ -7,7 +7,7 @@ from src.utils.security.jwt import validate_access_token
 from src.schemes.token import TokenDataScheme
 
 
-router = APIRouter(prefix="/bearer")
+router = APIRouter(prefix="/bearer", tags=["Token"])
 
 
 @router.post(

@@ -11,6 +11,7 @@ app = FastAPI()
 app.include_router(auth_router)
 app.include_router(media_router)
 app.include_router(token_router)
+app.include_router(admin_router)
 
 app.add_middleware(
     CORSMiddleware,

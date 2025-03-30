@@ -21,7 +21,7 @@ from src.schemes.user import UserScheme
 audio_formats = [
     "aiff", "au", "mid", "midi", "mp3", "m4a", "mp4", "wav", "wma"
 ]
-router = APIRouter(prefix="/media")
+router = APIRouter(prefix="/media", tags=["Media"])
 
 
 @router.post(

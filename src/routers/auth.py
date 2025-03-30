@@ -27,7 +27,7 @@ from src.schemes.token import TokenScheme, TokenDataScheme
 from src.repositories.user import UserRepository
 
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(prefix="/auth", tags=["Authorization"])
 
 
 @router.get(

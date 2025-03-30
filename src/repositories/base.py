@@ -10,8 +10,17 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker
 )
 from sqlalchemy.orm.decl_api import DeclarativeAttributeIntercept
-from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
-from sqlalchemy import String, BigInteger, ARRAY
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    DeclarativeBase
+)
+from sqlalchemy import (
+    String,
+    BigInteger,
+    ARRAY,
+    Boolean
+)
 
 
 T = TypeVar("T", bound=Any)
@@ -25,6 +34,7 @@ class User(Base):
     __tablename__ = "user"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
 
     yandex_id: Mapped[str] = mapped_column(String, nullable=False)
     login: Mapped[str] = mapped_column(String, nullable=False)

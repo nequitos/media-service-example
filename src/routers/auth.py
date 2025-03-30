@@ -1,24 +1,15 @@
 
-from typing import Annotated
-
-import jwt
-from jwt import InvalidTokenError
 from httpx import AsyncClient
-from passlib.context import CryptContext
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from fastapi import (
     APIRouter,
     Depends,
-    HTTPException,
-    status
-)
-from fastapi.security import (
-    OAuth2PasswordBearer,
-    OAuth2PasswordRequestForm
+    HTTPException
 )
 
 from src.depends import get_user_repository
+from src.utils.security.jwt import create_access_token
 
 from src.config import (
     YANDEX_AUTH_URL,
@@ -27,8 +18,7 @@ from src.config import (
     CLIENT_SECRET,
     CLIENT_ID,
     AUTH_REDIRECT_URI,
-    SECRET_KEY,
-    ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+    ACCESS_TOKEN_EXPIRE_MINUTES
 )
 from src.schemes.user import UserCreateScheme, UserScheme
 from src.schemes.token import TokenScheme, TokenDataScheme
@@ -36,54 +26,6 @@ from src.repositories.user import UserRepository
 
 
 router = APIRouter(prefix="/auth")
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-
-def create_access_token(
-    data: dict,
-    expire_delta: timedelta | None = None
-) -> str:
-    to_encode = data.copy()
-
-    if expire_delta:
-        expire = datetime.now(timezone.utc) + expire_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-
-    to_encode["exp"] = expire
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-    return encoded_jwt
-
-
-async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
-    repository: UserRepository = Depends(get_user_repository)
-) -> UserScheme:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"}
-    )
-
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-
-        if username is None:
-            raise credentials_exception
-
-        TokenDataScheme(username=username)
-    except InvalidTokenError:
-        raise credentials_exception
-
-    user_scheme = await repository.get_by_name(username)
-
-    if user_scheme is None:
-        raise credentials_exception
-    else:
-        return user_scheme
 
 
 @router.get(
@@ -123,8 +65,10 @@ async def callback(
         user_response = await client.get(YANDEX_USER_INFO_URL, headers=headers)
         user_info = user_response.json()
 
+    is_admin = True if CLIENT_ID == user_info["client_id"] else False
     user_create_scheme = UserCreateScheme(
-        id=user_info["id"],
+        yandex_id=user_info["id"],
+        is_admin=is_admin,
         login=user_info["login"],
         client_id=user_info["client_id"],
         real_name=user_info["real_name"],
@@ -138,8 +82,8 @@ async def callback(
         cid=cid
     )
 
-    endpoint = await repository.create(scheme=user_create_scheme)
-    if endpoint is not None:
+    endpoint_scheme = await repository.create(scheme=user_create_scheme)
+    if endpoint_scheme is not None:
         access_token_expire = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={"sub": user_info["first_name"]},

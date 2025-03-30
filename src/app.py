@@ -8,13 +8,15 @@ from src.routers import *
 
 app = FastAPI()
 app.include_router(auth_router)
+app.include_router(media_router)
 
 
-async def main(host: str, port: int):
+async def main(host: str, port: int) -> None:
     config = Config(app="app:app", host=host, port=port, log_level="debug")
     server = Server(config=config)
 
-    await uow.metadata_create()
+    # await uow.metadata_drop()
+    # await uow.metadata_create()
     await server.serve()
 
 

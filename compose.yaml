@@ -13,17 +13,21 @@ services:
       - db
     network_mode: host
 #    command: ["fastapi", "run", "app.py", "--proxy-headers", "--host", "localhost", "--port", "80"]
-    command: ["python", "init_db.py", "&&", "uvicorn", "src.app:app"]
+    command: >
+      /bin/sh -c 'python init_db.py && uvicorn src.app:app'
 
   db:
     image: postgres:16.8-bullseye
     restart: always
+    env_file:
+      - .env
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DATABASE}
+      - PGDATA=/var/lib/postgresql/data/db-files/
     ports:
-      - "127.0.0.1:${POSTGRES_PORT}:${POSTGRES_PORT}"
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     healthcheck:
       test: sh -c "pg_isready -U ${POSTGRES_USER} -h localhost"
       interval: 5s

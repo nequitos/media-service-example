@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from uvicorn import Server, Config
 from fastapi.middleware.cors import CORSMiddleware
 
-from depends import uow
+from src.depends import uow
 from src.config import HOST, PORT
 from src.routers import *
 

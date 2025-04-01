@@ -76,7 +76,7 @@ class UserRepository(Repository):
             )
 
     async def delete(self, _id) -> bool:
-        stmt = delete(User).filter_by(_id=_id)
+        stmt = delete(User).where(User.id == _id)
 
         async with self._session() as session:
             await session.execute(stmt)

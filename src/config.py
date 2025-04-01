@@ -1,5 +1,14 @@
+import os
 
 from environs import Env
+from os.path import exists
+from os import mkdir
+
+
+if not exists("resources"):
+    os.mkdir("resources")
+if not exists("resources/media"):
+    os.mkdir("resources/media")
 
 
 env = Env()

@@ -2,8 +2,8 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy import URL
 
-from repositories import *
-from config import *
+from src.repositories import *
+from src.config import *
 
 
 # --- Database initialize --- #
